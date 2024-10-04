@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
+import 'package:pokemon_pi/screens/list.dart';
 
 void main() {
   runApp(const MyApp());
@@ -50,47 +51,7 @@ class MyHomePage extends StatefulWidget {
   State<MyHomePage> createState() => _MyHomePageState();
 }
 
-class Pokemon {
-  final String name;
-  final String url;
-
-  Pokemon(this.name, this.url);
-}
-
 class _MyHomePageState extends State<MyHomePage> {
-  var pokemons = <Pokemon>[];
-
-  final dio = Dio();
-
-  Future<void> fetchPokemons() async {
-    try {
-      final response = await dio.get<Map<String, dynamic>>(
-          "https://pokeapi.co/api/v2/pokemon?limit=2");
-      if (response.statusCode == 200) {
-        final jsonData = jsonDecode(response.toString());
-        setState(() {
-          for (final result in jsonData['results']) {
-            pokemons.add(Pokemon(result['name'], result['url']));
-          }
-        });
-      } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("Failed to load pokemons")),
-        );
-      }
-    } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Failed to load pokemons")),
-      );
-    }
-  }
-
-  @override
-  void initState() {
-    super.initState();
-    fetchPokemons();
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -114,46 +75,7 @@ class _MyHomePageState extends State<MyHomePage> {
         ],
       ),
       body: SingleChildScrollView(
-        child: SafeArea(
-          child: Container(
-            color: const Color.fromARGB(255, 250, 214, 105),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                for (final pokemon in pokemons)
-                  ListTile(
-                    title: Text(pokemon.name),
-                  ),
-                RatingBar(
-                  initialRating: 2,
-                  ratingWidget: RatingWidget(
-                    full: Icon(Icons.abc),
-                    half: Icon(Icons.abc_outlined),
-                    empty: Icon(Icons.ac_unit),
-                  ),
-                  onRatingUpdate: (value) => print(value),
-                ),
-                RatingBar.builder(
-                  maxRating: 3,
-                  initialRating: 2,
-                  itemBuilder: (context, index) {
-                    if (index == 0) {
-                      return Icon(
-                        Icons.star,
-                        color: Colors.red,
-                      );
-                    }
-                    return Icon(
-                      Icons.star,
-                      color: Colors.amber,
-                    );
-                  },
-                  onRatingUpdate: (value) => print(value),
-                ),
-              ],
-            ),
-          ),
-        ),
+        child: SafeArea(child: PokemonList()),
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
